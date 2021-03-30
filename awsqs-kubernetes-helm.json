@@ -1,6 +1,6 @@
 {
     "typeName": "AWSQS::Kubernetes::Helm",
-    "description": "A resource provider for managing helm.",
+    "description": "A resource provider for managing Helm.",
     "sourceUrl": "https://github.com/aws-quickstart/quickstart-helm-resource-provider.git",
     "definitions": {
         "Arn": {
@@ -10,100 +10,100 @@
     },
     "properties": {
         "ClusterID": {
-            "description": "EKS cluster name",
+            "description": "EKS cluster name.",
             "type": "string"
         },
         "KubeConfig": {
-                "description": "Secrets Manager ARN for kubeconfig file",
+                "description": "AWS Secrets Manager ARN for Kubernetes configuration file.",
                 "$ref": "#/definitions/Arn"
         },
         "RoleArn": {
-            "description": "IAM to use with EKS cluster authentication, if not resource execution role will be used",
+            "description": "IAM role for Amazon EKS cluster authentication. If no value is provided, the resource execution role is used.",
             "$ref": "#/definitions/Arn"
         },
         "Repository": {
-            "description": "Repository url. Defaults to kubernetes-charts.storage.googleapis.com",
+            "description": "Repository URL. The default is kubernetes-charts.storage.googleapis.com.",
             "type": "string"
         },
         "RepositoryOptions": {
-            "description": "Extra options for repository",
+            "description": "Specify additional options for repository.",
             "type": "object",
             "properties": {
                 "Username": {
-                    "description": "Chart repository username",
+                    "description": "Chart repository user name.",
                     "type": "string"
                 },
                 "Password": {
-                    "description": "Chart repository password",
+                    "description": "Chart repository password.",
                     "type": "string"
                 },
                 "CAFile": {
-                    "description": "Verify certificates of HTTPS-enabled servers using this CA bundle from S3",
+                    "description": "To verify HTTPS-enabled server certificates, use this certificate authority bundle from Amazon S3.",
                     "type": "string"
                 },
                 "InsecureSkipTLSVerify": {
-                    "description": "Skip TLS certificate checks for the repository",
+                    "description": "Skip TLS certificate checks for the repository.",
                     "type": "boolean"
                 }
             }
         },
         "Chart": {
-            "description": "Chart name",
+            "description": "Name of the chart.",
             "type": "string"
         },
         "Namespace": {
-            "description": "Namespace to use with helm. Created if doesn't exist and default will be used if not provided",
+            "description": "Namespace to use with Helm. If this does not exist, it is created for you using the default value.",
             "type": "string"
         },
         "Name": {
-            "description": "Name for the helm release",
+            "description": "Name of the Helm release.",
             "type": "string"
         },
         "Values": {
-            "description": "Custom Values can optionally be specified",
+            "description": "(Optional) Provide custom values.",
             "type": "object",
             "patternProperties": {
                 "^.+$": {"type": "string"}
             }
         },
         "ValueYaml": {
-            "description": "String representation of a values.yaml file",
+            "description": "String representation of the values.yaml file.",
             "type": "string"
         },
         "Version": {
-            "description": "Version can be specified, if not latest will be used",
+            "description": "Specify version. If no value is provided, the latest version is used.",
             "type": "string"
         },
         "ValueOverrideURL": {
-            "description": "Custom Value Yaml file can optionally be specified",
+            "description": "(Optional) Provide a custom value for the YAML file.",
             "type": "string",
             "pattern": "^[sS]3://[0-9a-zA-Z]([-.\\w]*[0-9a-zA-Z])(:[0-9]*)*([?/#].*)?$"
         },
         "ID": {
-            "description": "Primary identifier for Cloudformation",
+            "description": "Primary identifier for AWS CloudFormation.",
             "type": "string"
         },
         "Resources": {
-            "description": "Resources from the helm charts",
+            "description": "Resources from Helm charts.",
             "type": "object"
         },
         "TimeOut": {
-            "description": "Timeout for resource provider. Default 60 mins",
+            "description": "Timeout for resource provider. The default is 60 minutes.",
             "type": "integer"
         },
         "VPCConfiguration": {
             "type": "object",
-            "description": "For network connectivity to Cluster inside VPC",
+            "description": "VPC cluster for network connectivity.",
             "properties": {
                 "SecurityGroupIds": {
-                    "description": "Specify one or more security groups",
+                    "description": "Specify one or more security groups.",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "SubnetIds": {
-                    "description": "Specify one or more subnets",
+                    "description": "Specify one or more subnets.",
                     "type": "array",
                     "items": {
                         "type": "string"
