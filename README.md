@@ -1,8 +1,6 @@
 # AWSQS::Kubernetes::Helm
 
-An AWS CloudFormation resource provider for the management of helm 3 resources in EKS and self-managed Kubernetes clusters.
-
-Properties and available attributes (ReadOnlyProperties) are documented in 
+This repository provides AWS CloudFormation options for managing Helm 3 resources in EKS and self-managed Kubernetes clusters. For properties and available attributes (ReadOnlyProperties), see 
 the [schema](./awsqs-kubernetes-helm.json).
 
 ## Installation
@@ -16,10 +14,9 @@ aws cloudformation create-stack \
 aws cloudformation describe-stacks \
 --stack-name awsqs-kubernetes-helm-resource | jq -r ".Stacks[0].Outputs[0].OutputValue" 
 ```
-A [template](./deploy.template.yaml) is provided to make deploying the resource into 
-an account easy. Use the role ARN to provide access to the cluster. In case of self-managed Kubernetes create upload yhe kubeconfig file to the AWS Secrets Manager.
+To help you deploy resources into your account, use the provided [template](./deploy.template.yaml). Use an ARN role to provide access to the cluster. For self-managed Kubernetes clusters, upload the **kubeconfig** file to AWS Secrets Manager.
 
-Example usage:
+## Example usage
 
 ```yaml
 AWSTemplateFormatVersion: 2010-09-09
