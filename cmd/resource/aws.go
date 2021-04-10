@@ -244,7 +244,7 @@ func getVpcConfig(ekssvc EKSAPI, ec2svc EC2API, model *Model) (*VPCConfiguration
 		return nil, nil
 	}
 	log.Println("Detected private cluster, adding VPC Configuration...")
-	subnets, err := filterNattedSubnets(ec2svc, resp.resourcesVpcConfig.SubnetIds)
+	subnets, err := filterSubnetsWithNATorTransitGatewayTargets(ec2svc, resp.resourcesVpcConfig.SubnetIds)
 	if err != nil {
 		return nil, err
 	}
@@ -259,7 +259,7 @@ func getVpcConfig(ekssvc EKSAPI, ec2svc EC2API, model *Model) (*VPCConfiguration
 	}, nil
 }
 
-func filterNattedSubnets(ec2client ec2iface.EC2API, subnets []*string) (filtered []*string, err error) {
+func filterSubnetsWithNATorTransitGatewayTargets(ec2client ec2iface.EC2API, subnets []*string) (filtered []*string, err error) {
 	resp, err := ec2client.DescribeSubnets(&ec2.DescribeSubnetsInput{
 		SubnetIds: subnets,
 	})
@@ -300,12 +300,9 @@ func filterNattedSubnets(ec2client ec2iface.EC2API, subnets []*string) (filtered
 			}
 		}
 		for _, route := range resp.RouteTables[0].Routes {
-			if route.NatGatewayId != nil {
+			if route.NatGatewayId != nil || route.TransitGatewayId != nil {
 				filtered = append(filtered, subnet.SubnetId)
-			}
-
-			if route.TransitGatewayId != nil {
-				filtered = append(filtered, subnet.SubnetId)
+				break
 			}
 		}
 	}

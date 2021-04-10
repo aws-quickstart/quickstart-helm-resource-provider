@@ -163,9 +163,37 @@ func (m *mockEC2Client) DescribeSubnets(i *ec2.DescribeSubnetsInput) (*ec2.Descr
 
 func (m *mockEC2Client) DescribeRouteTables(i *ec2.DescribeRouteTablesInput) (*ec2.DescribeRouteTablesOutput, error) {
 	d := map[string]*ec2.RouteTable{
-		"subnet-01": &ec2.RouteTable{Routes: []*ec2.Route{&ec2.Route{DestinationCidrBlock: aws.String("1.1.1.1/1"), GatewayId: aws.String("igw-01")}, &ec2.Route{DestinationCidrBlock: aws.String("1.1.1.1/1"), GatewayId: aws.String("igw-01")}}},
-		"subnet-02": &ec2.RouteTable{Routes: []*ec2.Route{&ec2.Route{DestinationCidrBlock: aws.String("1.1.1.1/1"), GatewayId: aws.String("igw-01")}, &ec2.Route{DestinationCidrBlock: aws.String("1.1.1.1/1"), NatGatewayId: aws.String("nat-01")}}},
-		"vpc-01":    &ec2.RouteTable{Routes: []*ec2.Route{&ec2.Route{DestinationCidrBlock: aws.String("1.1.1.1/1"), GatewayId: aws.String("igw-01")}, &ec2.Route{DestinationCidrBlock: aws.String("1.1.1.1/1"), NatGatewayId: aws.String("nat-01")}}},
+		"subnet-01": {
+			Routes: []*ec2.Route{
+				{DestinationCidrBlock: aws.String("10.0.0.0/16"), GatewayId: aws.String("local")},
+				{DestinationCidrBlock: aws.String("0.0.0.0/0"), GatewayId: aws.String("igw-01")},
+			},
+		},
+		"subnet-02": {
+			Routes: []*ec2.Route{
+				{DestinationCidrBlock: aws.String("10.0.0.0/16"), GatewayId: aws.String("local")},
+				{DestinationCidrBlock: aws.String("0.0.0.0/0"), NatGatewayId: aws.String("nat-01")},
+			},
+		},
+		"subnet-03": {
+			Routes: []*ec2.Route{
+				{DestinationCidrBlock: aws.String("10.0.0.0/16"), GatewayId: aws.String("local")},
+				{DestinationCidrBlock: aws.String("0.0.0.0/0"), TransitGatewayId: aws.String("tgw-01")},
+			},
+		},
+		"subnet-04": {
+			Routes: []*ec2.Route{
+				{DestinationCidrBlock: aws.String("10.0.0.0/16"), GatewayId: aws.String("local")},
+				{DestinationCidrBlock: aws.String("1.2.3.4/16"), TransitGatewayId: aws.String("tgw-01")},
+				{DestinationCidrBlock: aws.String("0.0.0.0/0"), TransitGatewayId: aws.String("tgw-02")},
+			},
+		},
+		"vpc-01": {
+			Routes: []*ec2.Route{
+				{DestinationCidrBlock: aws.String("10.0.0.0/16"), GatewayId: aws.String("local")},
+				{DestinationCidrBlock: aws.String("0.0.0.0/0"), NatGatewayId: aws.String("nat-01")},
+			},
+		},
 	}
 	var s string
 	for _, filter := range i.Filters {
@@ -175,7 +203,7 @@ func (m *mockEC2Client) DescribeRouteTables(i *ec2.DescribeRouteTablesInput) (*e
 		}
 		if aws.StringValue(filter.Name) == "association.subnet-id" {
 			s = aws.StringValue(filter.Values[0])
-			if s == "subnet-03" {
+			if s == "subnet-05" {
 				return &ec2.DescribeRouteTablesOutput{RouteTables: []*ec2.RouteTable{}}, nil
 			}
 
@@ -452,15 +480,19 @@ func TestGetVpcConfig(t *testing.T) {
 	}
 }
 
-func TestFilterNattedSubnets(t *testing.T) {
+func TestFilterSubnetsWithNATorTransitGatewayTargets(t *testing.T) {
 	mockSvc := &mockEC2Client{}
 	tests := map[string]struct {
 		subnets  []*string
 		eSubnets []*string
 	}{
 		"NATSubnets": {
-			subnets:  []*string{aws.String("subnet-01"), aws.String("subnet-02"), aws.String("subnet-03")},
-			eSubnets: []*string{aws.String("subnet-02"), aws.String("subnet-03")},
+			subnets:  []*string{aws.String("subnet-01"), aws.String("subnet-02"), aws.String("subnet-05")},
+			eSubnets: []*string{aws.String("subnet-02"), aws.String("subnet-05")},
+		},
+		"TransitGatewaySubnets": {
+			subnets:  []*string{aws.String("subnet-01"), aws.String("subnet-03"), aws.String("subnet-04")},
+			eSubnets: []*string{aws.String("subnet-03"), aws.String("subnet-04")},
 		},
 		"NoSubnets": {
 			subnets: []*string{aws.String("subnet-01")},
@@ -468,7 +500,7 @@ func TestFilterNattedSubnets(t *testing.T) {
 	}
 	for name, d := range tests {
 		t.Run(name, func(t *testing.T) {
-			result, err := filterNattedSubnets(mockSvc, d.subnets)
+			result, err := filterSubnetsWithNATorTransitGatewayTargets(mockSvc, d.subnets)
 			assert.Nil(t, err)
 			assert.ElementsMatch(t, d.eSubnets, result)
 		})
