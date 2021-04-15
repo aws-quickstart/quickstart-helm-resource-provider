@@ -91,6 +91,7 @@ Resources:
         LogGroupName: awsqs-kubernetes-helm-logs
         LogRoleArn: !GetAtt LogDeliveryRole.Arn
       SchemaHandlerPackage: !Ref HandlerPackage
+      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
   ResourceDefaultVersion:
     Type: AWS::CloudFormation::ResourceDefaultVersion
     Properties:
